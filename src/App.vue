@@ -4,18 +4,20 @@
     <h1>{{ msg }}</h1>
 
 
-    <h1>Ejemplo de Vuejs con Ionic consumiendo una API</h1>
-  <div >
+    <h1>Consumiendo la API EposNow</h1>
+
+  <h1>PRODUCTS</h1>
+
+  <ion-item>  
+    <ion-label><h2>Product Name</h2></ion-label>
+    <ion-label><h2>In Stock</h2></ion-label>
+  </ion-item>
+
+  <ion-item v-for="product in products">
     
-  </div>
-<h1>JSON</h1>
-
-<ion-item v-for="product in products">
-   <ion-title>{{ product.name }} </ion-title>
-  <ion-label>{{ product.email }}</ion-label>
-  <ion-input></ion-input>
-</ion-item>
-
+    <ion-label>{{ product.Name }}</ion-label>
+    <ion-label>{{getProductStock(product.Id) }}</ion-label>
+  </ion-item>
 
 
 
@@ -23,29 +25,64 @@
 </template>
 
 <script type="text/javascript">
+import axios from 'axios';
+import {allProducts} from './api';
+import {allStock} from './api';
 
 var urlUser = 'http://jsonplaceholder.typicode.com/users';
+
+var token = 'Basic UDNQVUFONkw3QkZSSlNSWVE3Sk5NRzNDS1pVT1pSVVg6S0NBSFhUMUlWNFlITEw2Qjc5VDFWUkJDN0tET0VFMDQ=';
+var endpointProducts = 'https://api.eposnowhq.com/api/V4/Product?page=1';
+var endpointStock = 'https://api.eposnowhq.com/api/V4/ProductStock';
+
 export default {
   name: 'app',
   created: function(){
-    this.getUsers();
+   this.fetchProducts();
+   this.fetchProductsStocks();
   },
   data () {
     return {
-      msg: 'Welcome to My first Vue.js/Ionic Example',
-      products: [],      
+      msg: 'Welcome to Solutions For Success',
+      products: [], 
+      stocks: [],
+           
     }
   }, 
-  methods:{
-    getUsers: function(){
-      this.$http.get(urlUser).then(function (response) {
-        this.products = response.data;
-        console(response);
-      }, function(){
-			alert('Error!');
-		});
-    }
+  methods: {
+    fetchProducts: function(){        
+        axios.get(endpointProducts,{headers: {'Authorization':token}})
+          .then(response => {
+            console.log(response);
+            this.products = response.data;
+          })
+          .catch(e => {
+            console.log(e)
+          })       
+
+      },
+    fetchProductsStocks: function(){   
+     axios.get(endpointStock,{headers: {'Authorization':token}})
+          .then(response => {
+            console.log(response);
+            this.stocks = response.data;
+          })
+          .catch(e => {
+            console.log(e)
+          })
+    
+      },
+    getProductStock(productId){      
+        for (let index = 0; index < this.stocks.length; index++) {
+          var stock = this.stocks[index];
+          if(stock.ProductId == productId){
+              return stock.ProductStockBatches[0].CurrentStock;
+          }     
+        }
+        return 0;
+      }
   },
+
     
 }
 </script>
